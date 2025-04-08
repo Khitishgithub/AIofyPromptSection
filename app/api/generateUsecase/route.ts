@@ -49,38 +49,37 @@ export async function POST(request: Request) {
       max_tokens: 600,
     });
 
-    // Calculate response time
+
     const endTime = Date.now();
     const responseTimeMs = endTime - startTime;
     const responseTimeSec = (responseTimeMs / 1000).toFixed(2);
 
-    // Get token usage
+
     const tokenUsage = {
       promptTokens: response.usage?.prompt_tokens || 0,
       completionTokens: response.usage?.completion_tokens || 0,
       totalTokens: response.usage?.total_tokens || 0
     };
 
-    // Parse the response to extract the three use cases
+
     const content = response.choices[0].message.content || "";
 
-    // Split by double line breaks to separate use cases
     const rawUseCases = content.split(/\n\n+/).filter(uc => uc.trim().length > 0);
     
-    // Parse each use case to extract heading and description
+
     const useCases = rawUseCases.slice(0, 3).map((useCase, index) => {
-      // Extract heading and description using regex or string operations
+ 
       let heading = "AI Can Transform Your Business";
       let description = useCase;
       
-      // Try to extract heading and description from formatted text
+
       const headingMatch = useCase.match(/HEADING:\s*(AI Can[^]*?)(?:\n|$)/i);
       const descMatch = useCase.match(/DESCRIPTION:\s*([^]*?)(?:\n\n|$)/i);
       
       if (headingMatch && headingMatch[1]) {
         heading = headingMatch[1].trim();
       } else {
-        // If no heading format, try to extract the first line if it starts with "AI Can"
+      
         const lines = useCase.split('\n');
         if (lines[0] && lines[0].trim().startsWith("AI Can")) {
           heading = lines[0].trim();
@@ -92,7 +91,7 @@ export async function POST(request: Request) {
         description = descMatch[1].trim();
       }
       
-      // Ensure heading starts with "AI Can"
+    
       if (!heading.startsWith("AI Can")) {
         heading = "AI Can " + heading;
       }
@@ -104,14 +103,14 @@ export async function POST(request: Request) {
       };
     });
 
-    // Return the response with all relevant data
+
     return NextResponse.json({ 
       useCases,
       metrics: {
         responseTime: `${responseTimeSec} seconds`,
         tokenUsage
       },
-      // Include the raw GPT response
+     
       rawResponse: {
         content: content,
         responseObject: response
